@@ -1,0 +1,8 @@
+*.png
+*.plist
+lib/
+output/
+resource/
+.DS_Store
+.git
+*.swp
