@@ -3,15 +3,14 @@ COMP = clang++
 FLAGS = -std=c++11 -stdlib=libc++ -Wall
 BIN = batchtool
 
+all: batchtool.o image.o pugixml.o lodepng.o
+	$(COMP) $(FLAGS) batchtool.o image.o pugixml.o lodepng.o -o $(BIN)
 
-#all:
-#	clang++ -std=c++11 -stdlib=libc++ batchtool.cpp lib/lodepng/lodepng.cpp lib/pugixml/pugixml.cpp -o batchtool
+batchtool.o: src/batchtool.cpp
+	$(COMP) $(FLAGS) -c src/batchtool.cpp 
 
-all: batchtool.o pugixml.o lodepng.o
-	$(COMP) $(FLAGS) batchtool.o pugixml.o lodepng.o -o $(BIN)
-
-batchtool.o: batchtool.cpp
-	$(COMP) $(FLAGS) -c batchtool.cpp 
+image.o: src/image.cpp
+	$(COMP) $(FLAGS) -c src/image.cpp 
 
 pugixml.o: lib/pugixml/pugixml.cpp
 	$(COMP) $(FLAGS) -c lib/pugixml/pugixml.cpp
