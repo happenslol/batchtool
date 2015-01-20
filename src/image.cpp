@@ -47,6 +47,14 @@ vector<unsigned char> image::get_pixels() {
 	return raw;
 }
 
+void image::set_size(Size size) {
+	size_ = size;
+	pixels_.resize(size_.height);
+	for (vector<RGBA>& current_row : pixels_)
+		current_row.resize(size_.width, RGBA());
+}
+
+
 void image::append_width(unsigned int new_width) {
 	if (new_width <= size_.width) 
 		cout << "append width failed: new width too small" << endl;
@@ -104,16 +112,6 @@ void image::append_image_right(image& image_to_append) {
 	else if (size_.height > image_to_append.size().height)
 		image_to_append.append_height(size_.height);
 
-	cout << "trying to merge. image 1 w:"
-	     << pixels_.at(0).size() 
-	     << " h:"
-	     << pixels_.size()
-	     << " image 2 w:"
-	     << image_to_append.pixels().at(0).size() 
-	     << " h:"
-	     << image_to_append.pixels().size()
-	     << endl;
-
 	// append new rows from other image to the right of each row
 	for (int y = 0; 
 	     y < (int) image_to_append.size().height; 
@@ -137,6 +135,19 @@ void image::append_image_right(image& image_to_append) {
 	     << endl;
 	// update width
 
+}
+
+void image::insert_image(Pos& pos, image& image_to_insert) {
+	// check if it fits
+	if (pos.x + image_to_insert.size().width > size_.width ||
+	    pos.y + image_to_insert.size().height > size_.height) {
+		cout << "image doesnt fit!" << endl;
+		return;
+	}
+	for (int y = 0; y < image_to_insert.size().height; ++y)
+		for (int x = 0; x < image_to_insert.size().width; ++x) 
+			pixels_[y + pos.y][x + pos.x] = image_to_insert.pixels().at(y).at(x);
+		
 }
 
 void image::trim() {
@@ -271,3 +282,4 @@ void image::write_file(const string& filename) {
 	else cout << filename << " written." << endl;
 	
 }
+

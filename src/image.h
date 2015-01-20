@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <cmath>
 
 #include "../lib/pugixml/pugixml.hpp"
 
@@ -12,6 +14,10 @@ struct Pos {
 	Pos() : x(0), y(0) {}
 	Pos(unsigned int x, unsigned int y) 
 		: x(x), y(y) {}
+	inline bool operator<(Pos pos) {
+		cout << "test" << endl;
+		return (pow((double) x, 4) + pow((double) y, 4) < pow((double) pos.x, 4) + pow((double) pos.y, 4));
+	}
 };
 
 struct Size {
@@ -34,7 +40,7 @@ struct Rect {
 
 struct RGBA {
 	unsigned int R, G, B, A;
-	RGBA() : R(255), G(0), B(0), A(255) {}
+	RGBA() : R(0), G(0), B(0), A(0) {}
 	RGBA(unsigned int R, 
 	     unsigned int G, 
 	     unsigned int B, 
@@ -61,12 +67,25 @@ class image {
 
 	vector<unsigned char> get_pixels(); 
 
+	void set_size(Size size);
+
+	// comparing images
+	static inline bool compare_area(image& img1, image& img2) {
+		return (img1.get_area() > img2.get_area());	
+	}
+
+	inline int get_area() {
+		return (size_.width * size_.height);
+	}
+
 	// Image manipulation
 	void append_width(unsigned int new_width);
 	void append_height(unsigned int new_height);
 
 	void append_image_bot(image& image_to_append);
 	void append_image_right(image& image_to_append);
+
+	void insert_image(Pos& pos, image& image_to_insert);
 
 	void trim();
 	void draw_bounds();
@@ -83,3 +102,4 @@ class image {
 	Rect bounds_;
 	Pos offset_;
 };
+

@@ -6,3 +6,5 @@ resource/
 .DS_Store
 .git
 *.swp
+*.bat
+bin/

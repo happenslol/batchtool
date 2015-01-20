@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 #include "image.h"
 
@@ -48,24 +49,97 @@ int main(int argc, const char* argv[])
 			current_image.trim();
 
 		// Draw bounding boxes (for debug purposes)
-/*		cout << "drawing bounds..." << endl;
+		cout << "drawing bounds..." << endl;
 		for (image& current_image : input)
 			current_image.draw_bounds();
-*/
-		// Set first image as base
-		image output = input.at(0);
 
-		// add all images to the right
 		// TODO: implement some sprite packing algorithm
 		if (input.size() == 1)
 			cout << "only 1 image has been input!";
 		else {
 			cout << "merging..." << endl;
-			for (unsigned int i = 1; i < input.size(); ++i)
-				output.append_image_right(input.at(i));
 
-			remove("output/output.png");
-			output.write_file("output/output.png");
+			sort(input.begin(), input.end(), image::compare_area);
+
+			vector<Pos> free_anchors;
+			vector<Pos> abs_anchors;
+
+			free_anchors.push_back(Pos());
+
+			for (unsigned int i = 0; i < input.size(); ++i) {
+				// set next image anchor to current smallest anchor point
+				abs_anchors.push_back(free_anchors.front());
+				
+				// find new anchors
+				Pos new_anchor_right(free_anchors.front().x + input.at(i).size().width,
+						     free_anchors.front().y);	
+				Pos new_anchor_bot(free_anchors.front().x,
+						   free_anchors.front().y + input.at(i).size().height);	
+
+				bool erased = false;
+				// still finding new anchors
+				for (int j = 1; j < free_anchors.size(); ++j) {
+					if ((free_anchors.at(j).x >= free_anchors.front().x) &&
+					    (free_anchors.at(j).x <= new_anchor_right.x)) {
+						new_anchor_right.y = min(new_anchor_right.y, free_anchors.at(j).y);
+						free_anchors.erase(free_anchors.begin() + j);
+						continue;
+					}
+					if ((free_anchors.at(j).y >= free_anchors.front().y) &&
+					    (free_anchors.at(j).y <= new_anchor_bot.y)) {
+						new_anchor_bot.x = min(new_anchor_bot.x, free_anchors.at(j).x);
+						free_anchors.erase(free_anchors.begin() + j);
+						continue;
+					}
+				}
+
+				// remove first, add new anchors
+				free_anchors.erase(free_anchors.begin());
+				free_anchors.push_back(new_anchor_right);
+				free_anchors.push_back(new_anchor_bot);
+
+				// re-sort anchors
+				sort(free_anchors.begin(), free_anchors.end());
+
+			}
+
+			int x = 0;
+			for (Pos& current_anchor : abs_anchors) 
+				cout << ++x
+				     << ": absolute anchor x: "
+				     << current_anchor.x
+				     << " y: "
+				     << current_anchor.y
+				     << " sum: "
+				     << current_anchor.x + current_anchor.y
+				     << endl;
+
+			unsigned int side_length = 0;
+
+			for (Pos& current_anchor : free_anchors) {
+				side_length = max(side_length, current_anchor.x);
+				side_length = max(side_length, current_anchor.y);
+			}
+
+			cout << "biggest side length is " << side_length << endl;
+			side_length = nextPow2(side_length);
+			cout << "pow2 side length is " << side_length << endl;
+
+			image output_image("output.png");
+			output_image.set_size(Size(side_length, side_length));
+
+			cout << "output image size is now " << output_image.size().width << ", " << output_image.size().height << endl;
+
+			if (abs_anchors.size() != input.size()) {
+				cout << "count mismatch!" << endl;
+				return -1;
+			}
+
+			for (int i = 0; i < abs_anchors.size(); ++i)
+				output_image.insert_image(abs_anchors.at(i), input.at(i));
+
+			remove("output.png");
+			output_image.write_file("output.png");
 			
 			// xml stuff goes here
 			stringstream buffer;
@@ -126,7 +200,7 @@ int main(int argc, const char* argv[])
 			metadata.append_child("integer").append_child(pugi::node_pcdata).set_value("1");
 
 			// size as string {width,height}
-			buffer << "{" << output.size().width << "," << output.size().height << "}";
+			buffer << "{" << output_image.size().width << "," << output_image.size().height << "}";
 			metadata.append_child("key").append_child(pugi::node_pcdata).set_value("size");
 			metadata.append_child("integer").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
 			buffer.str(string());
@@ -140,8 +214,8 @@ int main(int argc, const char* argv[])
 
 		}
 	}
-
+	
+	cin.get();
 	return 0;
 
 }
-
