@@ -14,9 +14,9 @@ struct Pos {
 	Pos() : x(0), y(0) {}
 	Pos(unsigned int x, unsigned int y) 
 		: x(x), y(y) {}
-	inline bool operator<(Pos pos) {
-		cout << "test" << endl;
-		return (pow((double) x, 4) + pow((double) y, 4) < pow((double) pos.x, 4) + pow((double) pos.y, 4));
+	static inline bool compare(const Pos pos1, const Pos pos2) {
+		return (pow((double) pos1.x, 4) + pow((double) pos1.y, 4) < 
+			pow((double) pos2.x, 4) + pow((double) pos2.y, 4));
 	}
 };
 

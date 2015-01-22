@@ -76,7 +76,6 @@ int main(int argc, const char* argv[])
 				Pos new_anchor_bot(free_anchors.front().x,
 						   free_anchors.front().y + input.at(i).size().height);	
 
-				bool erased = false;
 				// still finding new anchors
 				for (int j = 1; j < free_anchors.size(); ++j) {
 					if ((free_anchors.at(j).x >= free_anchors.front().x) &&
@@ -99,7 +98,7 @@ int main(int argc, const char* argv[])
 				free_anchors.push_back(new_anchor_bot);
 
 				// re-sort anchors
-				sort(free_anchors.begin(), free_anchors.end());
+				sort(free_anchors.begin(), free_anchors.end(), Pos::compare);
 
 			}
 
