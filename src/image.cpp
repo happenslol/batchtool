@@ -7,7 +7,8 @@ using namespace std;
 image::image(const string& name) : name_(name), 
 		   		   size_(Size()), 
 		   		   o_size_(Size()), 
-		   		   bounds_(Rect()) {}
+		   		   bounds_(Rect()),
+				   offset_(Pos(0, 0)) {}
 
 
 void image::set_pixels(vector<unsigned char>& raw, 

@@ -1,10 +1,14 @@
 #include <iostream>
-#include <cstdlib>
 #include <sstream>
+#include <fstream>
+#include <iterator>
 #include <string>
 #include <algorithm>
 
 #include "image.h"
+#include "xmlwriter.h"
+
+#include "base64.h"
 
 using namespace std;
 
@@ -53,7 +57,6 @@ int main(int argc, const char* argv[])
 		for (image& current_image : input)
 			current_image.draw_bounds();
 
-		// TODO: implement some sprite packing algorithm
 		if (input.size() == 1)
 			cout << "only 1 image has been input!";
 		else {
@@ -134,83 +137,39 @@ int main(int argc, const char* argv[])
 				return -1;
 			}
 
-			for (int i = 0; i < abs_anchors.size(); ++i)
+			for (int i = 0; i < abs_anchors.size(); ++i) {
 				output_image.insert_image(abs_anchors.at(i), input.at(i));
+				input.at(i).position(abs_anchors.at(i));
+			}
 
-			remove("output.png");
-			output_image.write_file("output.png");
-			
-			// xml stuff goes here
-			stringstream buffer;
+			remove("output/output.png");
+			output_image.write_file("output/" + output_image.name());
 
-			pugi::xml_document plist;
-			pugi::xml_node root = plist.append_child("plist");
-			root.append_attribute("version") = "1.0";
-		
-			// root plist dict
-			root.append_child("dict");
-		
-			// frames start
-			root.child("dict").append_child("key").append_child(pugi::node_pcdata).set_value("frames");
-			pugi::xml_node frames = root.child("dict").append_child("dict");
+			// encode output file to b64
+			ifstream pngInput("output/output.png", ios::binary);
+			string pngString((istreambuf_iterator<char>(pngInput)), istreambuf_iterator<char>());
+			cout << "read output png into string. length is " << pngString.length() << endl;
+			string encoded = base64_encode(reinterpret_cast<const unsigned char*>(pngString.c_str()), pngString.length());
 
+			string decoded = base64_decode(encoded);
+			ofstream pngOutput("output/decodedout.png", ios::binary);
+			pngOutput << decoded;
+			pngOutput.close();
+#if 0
+			xmlwriter* plistWriter = new xmlwriter(DOCTYPE_PLIST);
 			for (image& img : input) {
-				// new frame with key(filename)
-				frames.append_child("key").append_child(pugi::node_pcdata).set_value(img.name().c_str());
-
-				// dict containing frame data
-				pugi::xml_node framedict = frames.append_child("dict");
-
-				// frame as string {{x,y},{width,height}}
-				buffer << "{{" << 0 << "," << 0 << "},{" << 0 << "," << 0 << "}}";
-				framedict.append_child("key").append_child(pugi::node_pcdata).set_value("frame");
-				framedict.append_child("string").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
-				buffer.str(string());
-
-				// offset as string {x,y}
-				buffer << "{" << 0 << "," << 0 << "}";
-				framedict.append_child("key").append_child(pugi::node_pcdata).set_value("offset");
-				framedict.append_child("string").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
-				buffer.str(string());
-
-				// rotated as bool
-				framedict.append_child("key").append_child(pugi::node_pcdata).set_value("rotated");
-				framedict.append_child("false");
-	
-				// sourceColorRect as string {{x,y},{width,height}}
-				buffer << "{{" << 0 << "," << 0 << "},{" << 0 << "," << 0 << "}}";
-				framedict.append_child("key").append_child(pugi::node_pcdata).set_value("sourceColorRect");
-				framedict.append_child("string").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
-				buffer.str(string());
-
-				// sourceSize as string {width, height}
-				buffer << "{" << img.o_size().width << "," << img.o_size().height << "}";
-				framedict.append_child("key").append_child(pugi::node_pcdata).set_value("sourceSize");
-				framedict.append_child("string").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
-				buffer.str(string());
-			}	
-
-			// metadata start
-			root.child("dict").append_child("key").append_child(pugi::node_pcdata).set_value("metadata");
-			pugi::xml_node metadata = root.child("dict").append_child("dict");
-
-			// format as integer
-			metadata.append_child("key").append_child(pugi::node_pcdata).set_value("format");
-			metadata.append_child("integer").append_child(pugi::node_pcdata).set_value("1");
-
-			// size as string {width,height}
-			buffer << "{" << output_image.size().width << "," << output_image.size().height << "}";
-			metadata.append_child("key").append_child(pugi::node_pcdata).set_value("size");
-			metadata.append_child("integer").append_child(pugi::node_pcdata).set_value(buffer.str().c_str());
-			buffer.str(string());
-
-			// textureFileName as string
-			metadata.append_child("key").append_child(pugi::node_pcdata).set_value("textureFileName");
-			metadata.append_child("string").append_child(pugi::node_pcdata).set_value("testout.png");
-
-			plist.save_file("output.plist");
-			cout << "output.plist written." << endl;	
-
+				plistWriter->append_image(img);
+			}
+			plistWriter->set_meta(output_image);
+			plistWriter->write_xml("output/plistout.plist");
+#else
+			xmlwriter* spriteWriter = new xmlwriter(DOCTYPE_SPRITE);
+			for (image& img : input)
+				spriteWriter->append_image(img);
+			spriteWriter->set_meta(output_image);
+			spriteWriter->set_data(encoded);
+			spriteWriter->write_xml("output/spriteout.sprite");
+#endif
 		}
 	}
 	
@@ -218,3 +177,4 @@ int main(int argc, const char* argv[])
 	return 0;
 
 }
+

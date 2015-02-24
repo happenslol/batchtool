@@ -1,11 +1,11 @@
-#include <cstdlib>
+#ifndef _IMAGE_H_
+#define _IMAGE_H_
+
 #include <string>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 #include <cmath>
-
-#include "../lib/pugixml/pugixml.hpp"
 
 using namespace std;
 
@@ -14,7 +14,7 @@ struct Pos {
 	Pos() : x(0), y(0) {}
 	Pos(unsigned int x, unsigned int y) 
 		: x(x), y(y) {}
-	static inline bool compare(const Pos pos1, const Pos pos2) {
+	static inline bool compare(const Pos& pos1, const Pos& pos2) {
 		return (pow((double) pos1.x, 4) + pow((double) pos1.y, 4) < 
 			pow((double) pos2.x, 4) + pow((double) pos2.y, 4));
 	}
@@ -54,11 +54,13 @@ class image {
 
 	vector<vector<RGBA>> pixels() { return pixels_; }
 
-	string& name() { return name_; }
-	Size& size() { return size_; }
-	Size& o_size() { return o_size_; }
-	Rect& bounds() { return bounds_; }
-	Pos& offset() { return offset_; }
+	const string& name() const { return name_; }
+	const Size& size() const { return size_; }
+	const Size& o_size() const { return o_size_; }
+	const Rect& bounds() const { return bounds_; }
+	const Pos& position() const { return position_; }
+	void position(const Pos& position) { position_ = position; }
+	const Pos& offset() const { return offset_; }
 
 	// Raw pixel input/output
 	void set_pixels(vector<unsigned char>& raw, 
@@ -70,11 +72,11 @@ class image {
 	void set_size(Size size);
 
 	// comparing images
-	static inline bool compare_area(image& img1, image& img2) {
+	static bool compare_area(const image& img1, const image& img2) {
 		return (img1.get_area() > img2.get_area());	
 	}
 
-	inline int get_area() {
+	inline int get_area() const {
 		return (size_.width * size_.height);
 	}
 
@@ -100,6 +102,8 @@ class image {
 	Size size_;
 	Size o_size_;
 	Rect bounds_;
+	Pos position_;
 	Pos offset_;
 };
 
+#endif
