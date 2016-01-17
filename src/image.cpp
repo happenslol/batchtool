@@ -1,6 +1,6 @@
 #include "image.h"
 
-#include "../lib/lodepng/lodepng.h"
+#include "../../../lib/lodepng/lodepng.h"
 
 using namespace std;
 
