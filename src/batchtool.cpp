@@ -7,6 +7,8 @@
 #include <string>
 #include <algorithm>
 
+#include <unistd.h>
+
 #include <image.h>
 #include <xmlwriter.h>
 #include <jsonwriter.h>
@@ -26,26 +28,81 @@ unsigned int nextPow2(unsigned int n) {
     return ++n;
 }
 
-int main(int argc, const char* argv[])
-{
-    // TODO: getopt command line parsing
+static void usage(const string& bin) {
+    cerr << "Usage: " << bin << " <option(s)> SOURCES" << endl
+         << "Options:" << endl
+         << "\t-v\t\tShow verbose output" << endl
+         << "\t-t\t\tTrim images" << endl
+         << "\t-p\t\tMake output square and sidelength pow2" << endl
+         << "\t-b\t\tDraw bounding boxes" << endl
+         << "\t-o FILENAME\tOutput filename" << endl
+         << "\t-f FORMAT\tOutput format" << endl;
+}
 
+int main(int argc, char **argv)
+{
     if (argc <= 1) {
-        cout << "No files have been input." << endl;
+        usage(argv[0]);
         return 0;
     }
 
-    cout << "loading images" << endl;
+    bool VERBOSE = false;
+    bool TRIM = false;
+    bool POW2 = false;
+    bool BOUNDS = false;
+    string OUTPUT_NAME = string("output");
+    int OUTPUT_FORMAT = 0;
 
+    // Command line parsing
+    opterr = 1;
+    int c;
+
+    while ((c = getopt(argc, argv, "vtbo:f:")) != -1) {
+        switch(c) {
+            case 'v':
+                VERBOSE = true;
+                break;
+            case 't':
+                TRIM = true;
+                break;
+            case 'b':
+                BOUNDS = true;
+                break;
+            case 'o':
+                OUTPUT_NAME = string(optarg);
+                break;
+            case 'f':
+                cout << "Optarg at -f: " << optarg << endl;
+                if (!strcmp("xml", optarg))
+                    OUTPUT_FORMAT = 0;
+                else if (!strcmp("plist", optarg))
+                    OUTPUT_FORMAT = 1;
+                else if (!strcmp("sprite", optarg))
+                    OUTPUT_FORMAT = 2;
+                else if (!strcmp("json", optarg))
+                    OUTPUT_FORMAT = 3; 
+            default:
+                break;
+        }
+    }
+
+#if DEBUG
+    cout << "Options:" << endl
+         << "\tverbose: " << VERBOSE << endl
+         << "\ttrim: " << TRIM << endl
+         << "\toutput_name: " << OUTPUT_NAME << endl
+         << "\toutput_format: " << OUTPUT_FORMAT << endl;
+#endif
+
+    // Iterate through arguments
     vector<image> input;
-    
-    // Iterate through all input filepaths
-    for (int i = 1; i < argc; i++) {
+    for (int i = optind; i < argc; ++i) {
         string path(argv[i]);
         string filename = path.substr(path.find_last_of("/\\") + 1);
-#if DEBUG
-        cout << "loading image: " << filename << endl;
-#endif
+
+        if (VERBOSE) {
+            cout << "Loading image: " << filename << endl;
+        }
         
         image new_image(filename);
         new_image.read_file(argv[i]);
@@ -55,22 +112,24 @@ int main(int argc, const char* argv[])
                input.push_back(new_image);
     }
     
-    // Trim images
-    cout << "trimming..." << endl;
-    for (image& current_image : input)
-        current_image.trim();
+    if (TRIM) {
+        // Trim images
+        cout << "Trimming..." << endl;
+        for (image& current_image : input)
+            current_image.trim();
+    }
 
-#if DEBUG
-    // Draw bounding boxes (for debug purposes)
-    cout << "drawing bounds..." << endl;
-    for (image& current_image : input)
-        current_image.draw_bounds();
-#endif
+    if (BOUNDS) {
+        // Draw bounding boxes
+        cout << "Drawing bounds..." << endl;
+        for (image& current_image : input)
+            current_image.draw_bounds();
+    }
 
-    if (input.size() == 1)
-        cout << "only 1 image has been input!";
+    if (input.size() <= 1)
+        cout << "More than 1 image required.";
     else {
-        cout << "merging..." << endl;
+        cout << "Merging..." << endl;
 
         sort(input.begin(), input.end(), image::compare_area);
 
@@ -151,18 +210,22 @@ int main(int argc, const char* argv[])
              << side_length_y
              << endl;
 
-#if 0
-        side_length = nextPow2(side_length);
-        cout << "pow2 side length is " << side_length << endl;
-#endif
+        if (POW2) {
+            unsigned int side_length = max(nextPow2(side_length_x), nextPow2(side_length_x));
+            side_length_x = side_length_y = side_length;
+            cout << "Pow2 side length is " << side_length << endl;
+        }
 
-        image output_image("output.png");
+        image output_image(OUTPUT_NAME + ".png");
         output_image.set_size(Size(side_length_x, side_length_y));
 
-        cout << "output image size is now " << output_image.size().width << ", " << output_image.size().height << endl;
+        if (VERBOSE)
+            cout << "output image size is now "
+                 << output_image.size().width << ", "
+                 << output_image.size().height << endl;
 
         if (abs_anchors.size() != input.size()) {
-            cout << "count mismatch!" << endl;
+            cout << "Count mismatch!" << endl;
             return -1;
         }
 
@@ -171,7 +234,6 @@ int main(int argc, const char* argv[])
             input.at(i).position(abs_anchors.at(i));
         }
 
-        remove("output.png");
         output_image.write_file();
 
         // encode output file to b64
@@ -209,7 +271,7 @@ int main(int argc, const char* argv[])
         for (image& img : input)
             writer->append_image(img);
         writer->set_meta(output_image);
-        writer->write_file("spriteout.json");
+        writer->write_file(OUTPUT_NAME + ".json");
 #endif
     }
 

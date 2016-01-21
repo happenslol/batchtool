@@ -1,5 +1,4 @@
-#ifndef _XMLWRITER_H_
-#define _XMLWRITER_H_
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -30,5 +29,3 @@ class xmlwriter {
 		pugi::xml_node frames_;
 		doctype type_;
 };
-
-#endif

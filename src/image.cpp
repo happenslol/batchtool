@@ -289,4 +289,3 @@ void image::write_file() {
               << "\" written."
               << endl;	
 }
-

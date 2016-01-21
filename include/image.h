@@ -1,5 +1,4 @@
-#ifndef _IMAGE_H_
-#define _IMAGE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -108,5 +107,3 @@ class image {
         Pos position_;
         Pos offset_;
 };
-
-#endif
