@@ -1,0 +1,9 @@
+[submodule "lib/lodepng"]
+	path = lib/lodepng
+	url = git@github.com:lvandeve/lodepng.git
+[submodule "lib/pugixml"]
+	path = lib/pugixml
+	url = git@github.com:zeux/pugixml.git
+[submodule "lib/rapidjson"]
+	path = lib/rapidjson
+	url = git@github.com:miloyip/rapidjson.git

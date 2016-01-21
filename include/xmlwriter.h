@@ -4,9 +4,9 @@
 #include <string>
 #include <sstream>
 
-#include "../../../lib/pugixml/src/pugixml.hpp"
+#include <pugixml/src/pugixml.hpp>
 
-#include "image.h"
+#include <image.h>
 
 enum doctype {
 	DOCTYPE_XML,

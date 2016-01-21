@@ -1,10 +1,7 @@
-*.png
 *.plist
-lib/
 output/
-resource/
 .DS_Store
 .git
 *.swp
 *.bat
-bin/
+*.json

@@ -7,11 +7,11 @@
 #include <string>
 #include <algorithm>
 
-#include "image.h"
-#include "xmlwriter.h"
-#include "jsonwriter.h"
+#include <image.h>
+#include <xmlwriter.h>
+#include <jsonwriter.h>
 
-#include "base64.h"
+#include <base64.h>
 
 using namespace std;
 
@@ -29,6 +29,8 @@ unsigned int nextPow2(unsigned int n) {
 int main(int argc, const char* argv[])
 {
     cout << "file root: " << argv[0] << endl;
+
+    // TODO: getopt command line parsing
 
     // Check if files have been input
     if (argc > 1) {
@@ -185,6 +187,8 @@ int main(int argc, const char* argv[])
             pngOutput << decoded;
             pngOutput.close();
             */
+
+            // TODO: option to choose format from command line
 #if 0
             xmlwriter* plistWriter = new xmlwriter(DOCTYPE_PLIST);
             for (image& img : input) {
