@@ -1,5 +1,5 @@
 # batchtool
-Tool for trimming and merging textures into a spritesheet.
+Tool for trimming and merging png textures into a spritesheet.
 
 #### Building
 To build batchtool, clone it first:
@@ -21,3 +21,9 @@ cd build
 cmake ..
 make
 ```
+
+To test out if everything is working, use the test images from res/:
+```
+./batchtool -vtb -o test -f json ../res/*
+```
+This will output test.png and test.json into the executable directory.
