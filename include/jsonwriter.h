@@ -2,13 +2,13 @@
 #include <fstream>
 #include <iostream>
 
-#include "../../../lib/rapidjson/include/rapidjson/document.h"
-#include "../../../lib/rapidjson/include/rapidjson/writer.h"
-#include "../../../lib/rapidjson/include/rapidjson/prettywriter.h"
-#include "../../../lib/rapidjson/include/rapidjson/stringbuffer.h"
-#include "../../../lib/rapidjson/include/rapidjson/filewritestream.h"
+#include <rapidjson/include/rapidjson/document.h>
+#include <rapidjson/include/rapidjson/writer.h>
+#include <rapidjson/include/rapidjson/prettywriter.h>
+#include <rapidjson/include/rapidjson/stringbuffer.h>
+#include <rapidjson/include/rapidjson/filewritestream.h>
 
-#include "image.h"
+#include <image.h>
 
 class jsonwriter {
     public:
