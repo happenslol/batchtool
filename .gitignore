@@ -1,5 +1,6 @@
 *.plist
 output/
+cmake/
 .DS_Store
 .git
 *.swp
